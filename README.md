@@ -48,4 +48,4 @@ node main.js
 If everything is configured correctly, this command will create the token for you.
 
 ## 📞 Contact
-- **Telegram:** [@support_telegram](https://t.me/ZorroScripts)
+- **Telegram:** [@kingAImaster](https://t.me/kingAImaster)
