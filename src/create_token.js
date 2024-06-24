@@ -6,15 +6,18 @@ const {
   sendAndConfirmTransaction,
 } = require("@solana/web3.js");
 const {
-AuthorityType,
+  AuthorityType,
   MINT_SIZE,
   TOKEN_PROGRAM_ID,
   getMinimumBalanceForRentExemptMint,
+  getOrCreateAssociatedTokenAccount,
   getAssociatedTokenAddress,
   createInitializeMintInstruction,
   createAssociatedTokenAccountInstruction,
   createMintToInstruction,
   createSetAuthorityInstruction,
+  createTransferInstruction,
+  transfer
 } = require("@solana/spl-token");
 const {
   createCreateMetadataAccountV3Instruction,
@@ -28,10 +31,22 @@ async function createToken(tokenInfo, revokeMintBool, revokeFreezeBool) {
   const mintKeypair = Keypair.generate();
   const myPublicKey = myKeyPair.publicKey;
 
+  console.log("wallet publicKey: ", myPublicKey);
+
   const tokenATA = await getAssociatedTokenAddress(
     mintKeypair.publicKey,
     myPublicKey
   );
+
+  // const tokenATAAddress = await getOrCreateAssociatedTokenAccount(
+  //   connection,
+  //   myKeyPair,
+  //   mintKeypair.publicKey,
+  //   myPublicKey
+  // );
+
+  // console.log("tokenATAAddress: ", tokenATAAddress);
+
   const createMetadataInstruction = createCreateMetadataAccountV3Instruction(
     {
       metadata: PublicKey.findProgramAddressSync(
@@ -91,7 +106,7 @@ async function createToken(tokenInfo, revokeMintBool, revokeFreezeBool) {
       myPublicKey,
       tokenInfo.amount * Math.pow(10, tokenInfo.decimals)
     ),
-    createMetadataInstruction
+    createMetadataInstruction,
   );
   createNewTokenTransaction.feePayer = myKeyPair.publicKey;
 
@@ -117,21 +132,17 @@ async function createToken(tokenInfo, revokeMintBool, revokeFreezeBool) {
   }
 
   let JITO_TIP_ADDRESS = 'Cw8CFyM9FkoMi7K7Crf6HNQqf4uEMzpKw6QNghXLvLkY'
-  let jitoTipInstruction =  SystemProgram.transfer({
-      fromPubkey: myPublicKey,
-      toPubkey: new PublicKey(JITO_TIP_ADDRESS),
-      lamports: 15000000, // (your tip)
+  let jitoTipInstruction = SystemProgram.transfer({
+    fromPubkey: myPublicKey,
+    toPubkey: new PublicKey(JITO_TIP_ADDRESS),
+    lamports: 15000000, // (your tip)
   });
 
   createNewTokenTransaction.add(jitoTipInstruction)
 
-  
-
   let blockhash = (await connection.getLatestBlockhash("finalized")).blockhash;
   console.log("blockhash", blockhash);
   createNewTokenTransaction.recentBlockhash = blockhash;
-
-
 
   const signature = await sendAndConfirmTransaction(
     connection,
@@ -142,7 +153,7 @@ async function createToken(tokenInfo, revokeMintBool, revokeFreezeBool) {
   console.log("Token mint transaction sent. Signature:", signature);
   console.log("Token Created : ", tokenInfo);
   console.log("Token Mint Address :", mintKeypair.publicKey.toString());
-
+  console.log("Associated Token Address: ", tokenATA.toBase58()); ///cyh
   return mintKeypair.publicKey;
 }
 
