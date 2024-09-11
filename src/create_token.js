@@ -1,11 +1,11 @@
-const {
+import {
   Keypair,
   PublicKey,
   SystemProgram,
   Transaction,
   sendAndConfirmTransaction,
-} = require("@solana/web3.js");
-const {
+} from "@solana/web3.js";
+import {
   AuthorityType,
   MINT_SIZE,
   TOKEN_PROGRAM_ID,
@@ -18,21 +18,19 @@ const {
   createSetAuthorityInstruction,
   createTransferInstruction,
   transfer
-} = require("@solana/spl-token");
-const {
+} from "@solana/spl-token";
+import {
   createCreateMetadataAccountV3Instruction,
   PROGRAM_ID,
-} = require("@metaplex-foundation/mpl-token-metadata");
+} from "@metaplex-foundation/mpl-token-metadata";
 
-const { connection, myKeyPair } = require("../config.js");
+import { connection, myKeyPair } from "../config.js";
 
-async function createToken(tokenInfo, revokeMintBool, revokeFreezeBool) {
+export async function createToken(tokenInfo, revokeMintBool, revokeFreezeBool) {
+  const myPublicKey = myKeyPair.publicKey;
+  console.log("wallet publicKey: ", myPublicKey);
   const lamports = await getMinimumBalanceForRentExemptMint(connection);
   const mintKeypair = Keypair.generate();
-  const myPublicKey = myKeyPair.publicKey;
-
-  console.log("wallet publicKey: ", myPublicKey);
-
   const tokenATA = await getAssociatedTokenAddress(
     mintKeypair.publicKey,
     myPublicKey
@@ -156,7 +154,3 @@ async function createToken(tokenInfo, revokeMintBool, revokeFreezeBool) {
   console.log("Associated Token Address: ", tokenATA.toBase58()); ///cyh
   return mintKeypair.publicKey;
 }
-
-module.exports = {
-  createToken,
-};
